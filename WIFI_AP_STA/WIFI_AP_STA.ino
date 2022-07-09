@@ -9,6 +9,7 @@ void setup() {
   // put your setup code here, to run once:
   WiFi.mode(WIFI_AP);
   WiFi.softAP(ssid1, passwd1);
+  Serial.begin(9600);
   Serial.print("Network Created with ssid :");
   Serial.println(ssid);
   Serial.println("Network is available to use");
