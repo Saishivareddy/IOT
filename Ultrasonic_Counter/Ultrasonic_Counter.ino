@@ -1,25 +1,11 @@
-#define BLYNK_TEMPLATE_ID "TMPLD54NX7JY"
-#define BLYNK_DEVICE_NAME "Counter Using Ultrasonic Sensor"
-#define BLYNK_AUTH_TOKEN "zWUwMxC0SUqR5ALuohxoljKhDZGVJa0g"
-#define BLYNK_PRINT Serial
-
-#include <WiFi.h>
-#include <WiFiClient.h>
-#include <BlynkSimpleEsp32.h>
-int count = 0;
-float distance = 100;
-
-char ssid[] = "Shiva";
-char pass[] = "shiva@1412";
-char auth[] = BLYNK_AUTH_TOKEN;
-
 #define trig 26
 #define echo 27
 #define trig_exit 22
 #define echo_exit 23
 #define led_entry 14
 #define led_exit 21
-
+int count = 0;
+float distance = 100;
 void setup() {
   // put your setup code here, to run once:
   pinMode(trig,OUTPUT);
@@ -28,14 +14,12 @@ void setup() {
   pinMode(echo_exit, INPUT);
   pinMode(led_entry, OUTPUT);
   pinMode(led_exit, OUTPUT);
-  Blynk.begin(auth,ssid,pass);
   Serial.begin(9600);
 
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  Blynk.run();
   digitalWrite(trig,LOW);
   delay(5);
   digitalWrite(trig, HIGH);
@@ -47,7 +31,6 @@ void loop() {
   {
     distance = 100;
   }
-  Blynk.virtualWrite(V0, distance);
   Serial.print("Entry Distance :");
   Serial.println(distance);
   delay(1000);
@@ -61,8 +44,6 @@ void loop() {
   float distance_exit = (duration_exit* 0.034)/2;
   Serial.print("Exit Distance :");
   Serial.println(distance_exit);
-  Blynk.virtualWrite(V1, distance_exit);
-
 //  delay(3000);
   
   if(distance < 15)
@@ -89,6 +70,5 @@ void loop() {
   }
   Serial.print("Number of persons in room :");
   Serial.println(count);
-  Blynk.virtualWrite(V2, count);
 //  delay(1000);
 }
