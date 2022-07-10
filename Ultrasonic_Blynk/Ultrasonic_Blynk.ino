@@ -1,14 +1,15 @@
 #define BLYNK_TEMPLATE_ID "TMPL-oiPMf-C"
 #define BLYNK_DEVICE_NAME "Distance"
-#define BLYNK_AUTH_TOKEN "EXh0K3A_6Lrxv38ad9jvDLQPlMAKXBk7"
+#define BLYNK_AUTH_TOKEN "uN-JFTpFP6qkNZjxPzPDTUSHGChOWFSK"
+
 #define BLYNK_PRINT Serial
 
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <BlynkSimpleEsp32.h>
 
-#define trigpin 12
-#define echopin 14
+#define trigpin 26
+#define echopin 27
 #define led 13
 float distance = 0;
 int duration = 0;
