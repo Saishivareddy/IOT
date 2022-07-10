@@ -23,37 +23,43 @@ void setup() {
   pinMode(trigpin, OUTPUT);
   pinMode(echopin, INPUT);
   pinMode(led, OUTPUT);
-
+  Serial.print("Trying to connect to ssid :");
+  Serial.println(ssid);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  WiFi.begin(ssid,pass);
+  
+  if(WiFi.status() != WL_CONNECTED)
+  {
+    WiFi.begin(ssid,pass);
+    Serial.print(".");
+    delay(500);
   if(WiFi.status() == WL_CONNECTED)
   {
-    Serial.print("Connected to ssid :");
-    Serial.println(ssid);
+    Serial.println("Connected");
   }
-  digitalWrite(trigpin,LOW);
-  delay(1);
-  digitalWrite(trigpin, HIGH);
-  delay(10);
-  digitalWrite(trigpin, LOW);
+  }
+    digitalWrite(trigpin,LOW);
+    delay(1);
+    digitalWrite(trigpin, HIGH);
+    delay(10);
+    digitalWrite(trigpin, LOW);
 
-  duration = pulseIn(echopin, HIGH);
-  distance = (duration*0.034)/2;
-  Serial.print("Distance :");
-  Serial.print(distance);
-  Serial.println(" cm");
-  
-  if(distance <= 15)
-  {
-    digitalWrite(led, HIGH);
-  }
-  else
-  {
-    digitalWrite(led, LOW);
-  }
+    duration = pulseIn(echopin, HIGH);
+    distance = (duration*0.034)/2;
+    Serial.print("Distance :");
+    Serial.print(distance);
+    Serial.println(" cm");
+    
+    if(distance <= 15)
+    {
+      digitalWrite(led, HIGH);
+    }
+    else
+    {
+      digitalWrite(led, LOW);
+    }
   ThingSpeak.writeField(channel, channelfield, distance, auth);
   delay(2000);
 }
