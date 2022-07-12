@@ -3,7 +3,6 @@ extern "C" {
   #include "user_interface.h"
 
   void app_loop();
-  void restartMCU();
 }
 
 #include "Settings.h"
@@ -17,8 +16,6 @@ extern "C" {
 #error "Please specify your BLYNK_TEMPLATE_ID and BLYNK_DEVICE_NAME"
 #endif
 
-BlynkTimer edgentTimer;
-
 #include "BlynkState.h"
 #include "ConfigStore.h"
 #include "ResetButton.h"
@@ -26,7 +23,6 @@ BlynkTimer edgentTimer;
 #include "Indicator.h"
 #include "OTA.h"
 #include "Console.h"
-
 
 inline
 void BlynkState::set(State m) {
@@ -46,9 +42,7 @@ void printDeviceBanner()
   DEBUG_PRINT(String("Product:  ") + BLYNK_DEVICE_NAME);
   DEBUG_PRINT(String("Firmware: ") + BLYNK_FIRMWARE_VERSION " (build " __DATE__ " " __TIME__ ")");
   if (configStore.getFlag(CONFIG_FLAG_VALID)) {
-    DEBUG_PRINT(String("Token:    ") +
-                String(configStore.cloudToken).substring(0,4) +
-                " - •••• - •••• - ••••");
+    DEBUG_PRINT(String("Token:    ...") + (configStore.cloudToken+28));
   }
   DEBUG_PRINT(String("Device:   ") + BLYNK_INFO_DEVICE + " @ " + ESP.getCpuFreqMHz() + "MHz");
   DEBUG_PRINT(String("MAC:      ") + WiFi.macAddress());
@@ -85,8 +79,9 @@ public:
     indicator_init();
     button_init();
     config_init();
-    printDeviceBanner();
     console_init();
+
+    printDeviceBanner();
 
     if (configStore.getFlag(CONFIG_FLAG_VALID)) {
       BlynkState::set(MODE_CONNECTING_NET);
@@ -113,7 +108,10 @@ public:
     }
   }
 
-} BlynkEdgent;
+};
+
+Edgent BlynkEdgent;
+BlynkTimer edgentTimer;
 
 void app_loop() {
     edgentTimer.run();

@@ -15,16 +15,13 @@ extern "C" {
 #error "Please specify your BLYNK_TEMPLATE_ID and BLYNK_DEVICE_NAME"
 #endif
 
-BlynkTimer edgentTimer;
-
 #include "BlynkState.h"
 #include "ConfigStore.h"
 #include "ResetButton.h"
 #include "ConfigMode.h"
 #include "Indicator.h"
-#include "OTA.h"
+//#include "OTA.h"
 #include "Console.h"
-
 
 inline
 void BlynkState::set(State m) {
@@ -44,11 +41,10 @@ void printDeviceBanner()
   DEBUG_PRINT(String("Product:  ") + BLYNK_DEVICE_NAME);
   DEBUG_PRINT(String("Firmware: ") + BLYNK_FIRMWARE_VERSION " (build " __DATE__ " " __TIME__ ")");
   if (configStore.getFlag(CONFIG_FLAG_VALID)) {
-    DEBUG_PRINT(String("Token:    ") +
-                String(configStore.cloudToken).substring(0,4) +
-                " - •••• - •••• - ••••");
+    DEBUG_PRINT(String("Token:    ...") + (configStore.cloudToken+28));
   }
   DEBUG_PRINT(String("Device:   ") + BLYNK_INFO_DEVICE);
+  DEBUG_PRINT(String("MAC:      ") + WiFi.macAddress());
   DEBUG_PRINT(String("WiFi FW:  ") + rpc_system_version());
   DEBUG_PRINT("--------------------------");
 }
@@ -74,8 +70,9 @@ public:
     //indicator_init();
     button_init();
     config_init();
-    printDeviceBanner();
     console_init();
+
+    printDeviceBanner();
 
     if (configStore.getFlag(CONFIG_FLAG_VALID)) {
       BlynkState::set(MODE_CONNECTING_NET);
@@ -95,17 +92,19 @@ public:
     case MODE_CONNECTING_NET:    enterConnectNet();    break;
     case MODE_CONNECTING_CLOUD:  enterConnectCloud();  break;
     case MODE_RUNNING:           runBlynkWithChecks(); break;
-    case MODE_OTA_UPGRADE:       enterOTA();           break;
+    case MODE_OTA_UPGRADE:       enterError();         break; // TODO: enterOTA
     case MODE_SWITCH_TO_STA:     enterSwitchToSTA();   break;
     case MODE_RESET_CONFIG:      enterResetConfig();   break;
     default:                     enterError();         break;
     }
   }
 
-} BlynkEdgent;
+};
+
+Edgent BlynkEdgent;
+BlynkTimer edgentTimer;
 
 void app_loop() {
     edgentTimer.run();
     edgentConsole.run();
 }
-

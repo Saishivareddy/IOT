@@ -176,12 +176,8 @@ public:
 };
 
 
-#if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_BLYNK)
-  static BlynkTransportWioTerminal_BLE _blynkTransportBLE;
-  BlynkWioTerminal_BLE Blynk(_blynkTransportBLE);
-#else
-  extern BlynkWioTerminal_BLE Blynk;
-#endif
+static BlynkTransportWioTerminal_BLE _blynkTransportBLE;
+BlynkWioTerminal_BLE Blynk(_blynkTransportBLE);
 
 inline
 void BlynkTransportWioTerminal_BLE::onConnect(BLEServer* pServer) {

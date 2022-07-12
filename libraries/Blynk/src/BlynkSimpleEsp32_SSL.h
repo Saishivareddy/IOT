@@ -36,7 +36,6 @@ public:
     void setRootCA(const char* fp) { caCert = fp; }
 
     bool connect() {
-        this->client->setHandshakeTimeout(30);
         this->client->setCACert(caCert);
         if (BlynkArduinoClientGen<Client>::connect()) {
           BLYNK_LOG1(BLYNK_F("Certificate OK"));
@@ -126,13 +125,9 @@ public:
 
 };
 
-#if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_BLYNK)
-  static WiFiClientSecure _blynkWifiClient;
-  static BlynkArduinoClientSecure<WiFiClientSecure> _blynkTransport(_blynkWifiClient);
-  BlynkWifi<BlynkArduinoClientSecure<WiFiClientSecure> > Blynk(_blynkTransport);
-#else
-  extern BlynkWifi<BlynkArduinoClientSecure<WiFiClientSecure> > Blynk;
-#endif
+static WiFiClientSecure _blynkWifiClient;
+static BlynkArduinoClientSecure<WiFiClientSecure> _blynkTransport(_blynkWifiClient);
+BlynkWifi<BlynkArduinoClientSecure<WiFiClientSecure> > Blynk(_blynkTransport);
 
 #include <BlynkWidgets.h>
 

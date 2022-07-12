@@ -96,13 +96,9 @@ public:
 
 };
 
-#if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_BLYNK)
-  static WiFiClient _blynkWifiClient;
-  static BlynkArduinoClient _blynkTransport(_blynkWifiClient);
-  BlynkWifi Blynk(_blynkTransport);
-#else
-  extern BlynkWifi Blynk;
-#endif
+static WiFiClient _blynkWifiClient;
+static BlynkArduinoClient _blynkTransport(_blynkWifiClient);
+BlynkWifi Blynk(_blynkTransport);
 
 #include <BlynkWidgets.h>
 

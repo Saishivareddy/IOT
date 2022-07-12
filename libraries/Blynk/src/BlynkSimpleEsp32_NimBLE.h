@@ -176,12 +176,8 @@ public:
 };
 
 
-#if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_BLYNK)
-  static BlynkTransportEsp32_NimBLE _blynkTransportBLE;
-  BlynkEsp32_NimBLE Blynk(_blynkTransportBLE);
-#else
-  extern BlynkEsp32_NimBLE Blynk;
-#endif
+static BlynkTransportEsp32_NimBLE _blynkTransportBLE;
+BlynkEsp32_NimBLE Blynk(_blynkTransportBLE);
 
 inline
 void BlynkTransportEsp32_NimBLE::onConnect(NimBLEServer* pServer) {

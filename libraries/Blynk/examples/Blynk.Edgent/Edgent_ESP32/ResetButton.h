@@ -1,6 +1,4 @@
 
-#ifdef BOARD_BUTTON_PIN
-
 volatile bool     g_buttonPressed = false;
 volatile uint32_t g_buttonPressTime = -1;
 
@@ -26,7 +24,7 @@ void button_change(void)
     uint32_t buttonHoldTime = millis() - g_buttonPressTime;
     if (buttonHoldTime >= BUTTON_HOLD_TIME_ACTION) {
       button_action();
-    } else if (buttonHoldTime >= BUTTON_PRESS_TIME_ACTION) {
+    } else {
       // User action
     }
     g_buttonPressTime = -1;
@@ -43,11 +41,3 @@ void button_init()
   attachInterrupt(BOARD_BUTTON_PIN, button_change, CHANGE);
 }
 
-#else
-
-#define g_buttonPressed     false
-#define g_buttonPressTime   0
-
-void button_init() {}
-
-#endif

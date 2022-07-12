@@ -1,7 +1,4 @@
 
-#include <ArduinoOTA.h> // only for InternalStorage
-#include <ArduinoHttpClient.h>
-
 #define OTA_FATAL(...) { BLYNK_LOG1(__VA_ARGS__); delay(1000); restartMCU(); }
 
 #define USE_SSL
@@ -13,7 +10,6 @@ extern BlynkTimer edgentTimer;
 BLYNK_WRITE(InternalPinOTA) {
   overTheAirURL = param.asString();
 
-  // Force HTTPS update
   overTheAirURL.replace("http://", "https://");
 
   edgentTimer.setTimeout(2000L, [](){
@@ -25,6 +21,33 @@ BLYNK_WRITE(InternalPinOTA) {
 
     BlynkState::set(MODE_OTA_UPGRADE);
   });
+}
+
+#include <ArduinoOTA.h> // only for InternalStorage
+
+#if defined(USE_SSL)
+
+WiFiClient* connectSSL(const String& host, const int port)
+{
+  // Reuse Client
+  WiFiSSLClient* clientSSL = &_blynkWifiClient;
+  //WiFiSSLClient* clientSSL = new WiFiSSLClient();
+
+  if (!clientSSL->connect(host.c_str(), port)) {
+    OTA_FATAL(F("Connection failed"));
+  }
+  return clientSSL;
+}
+
+#endif
+
+WiFiClient* connectTCP(const String& host, const int port)
+{
+  WiFiClient* clientTCP = new WiFiClient();
+  if (!clientTCP->connect(host.c_str(), port)) {
+    OTA_FATAL(F("Client not connected"));
+  }
+  return clientTCP;
 }
 
 bool parseURL(String url, String& protocol, String& host, int& port, String& uri)
@@ -81,36 +104,55 @@ void enterOTA() {
 
   Client* client = NULL;
   if (protocol == "http") {
-    client = new WiFiClient();
+    client = connectTCP(host, port);
 #ifdef USE_SSL
   } else if (protocol == "https") {
-    client = &_blynkWifiClient;
-    //client = new WiFiClientSecure();
+    client = connectSSL(host, port);
 #endif
   } else {
     OTA_FATAL(String("Unsupported protocol: ") + protocol);
   }
-  HttpClient http(*client, host, port);
-  http.get(url);
 
-  int statusCode = http.responseStatusCode();
-  if (statusCode != 200) {
-    http.stop();
-    OTA_FATAL(String("HTTP status code: ") + statusCode);
+  client->print(String("GET ") + url + " HTTP/1.0\r\n"
+               + "Host: " + host + "\r\n"
+               + "Connection: keep-alive\r\n"
+               + "\r\n");
+
+  uint32_t timeout = millis();
+  while (client->connected() && !client->available()) {
+    if (millis() - timeout > 10000L) {
+      OTA_FATAL("Response timeout");
+    }
+    delay(10);
   }
 
+  // Collect headers
+  String md5;
+  int contentLength = 0;
 
-  int contentLength = http.contentLength();
-  if (contentLength == HttpClient::kNoContentLengthHeader) {
-    http.stop();
+  while (client->available()) {
+    String line = client->readStringUntil('\n');
+    line.trim();
+    //DEBUG_PRINT(line);    // Uncomment this to show response headers
+    line.toLowerCase();
+    if (line.startsWith("content-length:")) {
+      contentLength = line.substring(line.lastIndexOf(':') + 1).toInt();
+    } else if (line.startsWith("x-md5:")) {
+      md5 = line.substring(line.lastIndexOf(':') + 1);
+    } else if (line.length() == 0) {
+      break;
+    }
+    delay(10);
+  }
+
+  if (contentLength <= 0) {
     OTA_FATAL("Content-Length not defined");
   }
 
   if (!InternalStorage.open(contentLength)) {
-    http.stop();
-    OTA_FATAL("Not enough space to store the update");
+    client->stop();
+    OTA_FATAL("OTA begin failed");
   }
-  //InternalStorage.debugPrint();
 
   DEBUG_PRINT("Flashing...");
 
@@ -118,8 +160,16 @@ void enterOTA() {
   int prevProgress = 0;
   uint8_t buff[256];
   while (client->connected() && written < contentLength) {
+    delay(10);
+    timeout = millis();
+    while (client->connected() && !client->available()) {
+      delay(1);
+      if (millis() - timeout > 10000L) {
+        OTA_FATAL("Timeout");
+      }
+    }
 
-    int len = http.readBytes(buff, sizeof(buff));
+    int len = client->read(buff, sizeof(buff));
     if (len <= 0) continue;
 
     for (int i = 0; i<len; i++) {
@@ -134,11 +184,11 @@ void enterOTA() {
     }
   }
   BLYNK_PRINT.println();
+  client->stop();
   InternalStorage.close();
-  http.stop();
 
   if (written != contentLength) {
-    OTA_FATAL(String("Interrupted at ") + written + " / " + contentLength + " bytes");
+    OTA_FATAL(String("Write failed. Written ") + written + " / " + contentLength + " bytes");
   }
 
   DEBUG_PRINT("=== Update successfully completed. Rebooting.");
