@@ -12,14 +12,18 @@ void setup() {
   Serial.begin(9600);
 }
 
-void dhtfun(){
+void dhtfun() {
   // put your main code here, to run repeatedly:
+
+
+}
+void loop() {
   hum  = dht.readHumidity();
   temp = dht.readTemperature();
   if (isnan(hum) || isnan(temp))
   {
     Serial.println("Failed to read from DHT11 Sensor");
-//    delay(2000);
+    //    delay(2000);
   }
   else
   {
@@ -27,12 +31,11 @@ void dhtfun(){
     Serial.println(temp);
     Serial.print("Humidity    :");
     Serial.println(hum);
-//    delay(2000);
+    //    delay(2000);
+    touchAttachInterrupt(T3, dhtfun, 30);  // Processor will goto sleep; Wakeup and continue with dhtfun()
+    Serial.println("Going to Sleep Mode");
+    delay(500);
+    esp_sleep_enable_touchpad_wakeup();
+    esp_light_sleep_start();
   }
-  }
-  void loop() {
-  touchAttachInterrupt(T3, dhtfun, 30);  // Processor will goto sleep; Wakeup and continue with dhtfun() 
-  esp_sleep_enable_touchpad_wakeup();
-  esp_light_sleep_start();
-  Serial.println("Controller wakeup from Sleep Mode");
 }
