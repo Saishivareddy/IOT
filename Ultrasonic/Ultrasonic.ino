@@ -1,4 +1,4 @@
-#define trigpin 26
+//#define trigpin 26
 #define echopin 27
 #define led 13
 float distance = 0;
@@ -7,7 +7,7 @@ int duration = 0;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
-  pinMode(trigpin, OUTPUT);
+//  pinMode(trigpin, OUTPUT);
   pinMode(echopin, INPUT);
   pinMode(led, OUTPUT);
 
@@ -15,11 +15,11 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  digitalWrite(trigpin,LOW);
+  digitalWrite(26,LOW);
   delay(1);
-  digitalWrite(trigpin, HIGH);
+  digitalWrite(26, HIGH);
   delay(10);
-  digitalWrite(trigpin, LOW);
+  digitalWrite(26, LOW);
 
   duration = pulseIn(echopin, HIGH);
   distance = (duration*0.034)/2;
@@ -35,6 +35,7 @@ void loop() {
   {
     digitalWrite(led, LOW);
   }
-  
-  delay(2000);
+  esp_sleep_enable_ext1_wakeup(0x4000000, ESP_EXT1_WAKEUP_ANY_HIGH);
+  esp_deep_sleep_start();
+//  delay(2000);
 }
